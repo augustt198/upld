@@ -1,0 +1,7 @@
+{
+    "web_addr": ":8080",
+    "db_addr": "[database address]"
+    "db_name": "[database name]",
+    "db_user": "[database username]",
+    "db_pass": "[database password]"
+}

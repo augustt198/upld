@@ -1,0 +1,24 @@
+.header {
+    background-color: rgb(127, 149, 189);
+    height: 50px;
+    padding: 10px;
+
+    color: white;
+}
+
+.brand {
+    text-decoration: none !important;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+
+    display: inline-block;
+}
+
+.dot:after {
+    margin-left: 8px;
+    margin-right: 8px;
+
+    content: "•";
+    display: inline-block;
+}

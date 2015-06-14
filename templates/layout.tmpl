@@ -2,9 +2,24 @@
 <html>
     <head>
         <title>Hello World</title>
+
+        <link rel="stylesheet" href="css/primer.css">
+        <link rel="stylesheet" href="css/style.css">
     </head>
 
     <body>
-        <h1>Hello World<h1>
+        <div class="header">
+            <div class="container">
+                <a class="brand" href="/">
+                    Upld
+                </a>
+                <span class="dot"></span>
+                Log in
+            </div>
+        </div>
+
+        <div class="container">
+            {{ yield }}
+        </div>
     </body>
 </html>
