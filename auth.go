@@ -1,8 +1,9 @@
 package main
 
 import (
-    "log"
     "net/http"
+
+    "golang.org/x/crypto/bcrypt"
 
     "github.com/go-martini/martini"
     "github.com/gorilla/sessions"
@@ -11,6 +12,13 @@ import (
 )
 
 var store = sessions.NewCookieStore([]byte("this is supposed to be secret"))
+
+func AddFlash(req *http.Request, w http.ResponseWriter, val interface{}) {
+    session, _ := store.Get(req, "users")
+    session.AddFlash(val)
+
+    session.Save(req, w)
+}
 
 type User interface {
     LoggedIn() bool
@@ -39,26 +47,85 @@ func DefaultUser() User {
     return user{nil, false}
 }
 
+
+type templatedata struct {
+    user User
+    flashes []interface{}
+    data map[string]interface{}
+}
+
+func (t templatedata) User() User {
+    return t.user
+}
+
+func (t templatedata) Flashes() []interface{} {
+    return t.flashes
+}
+
+func (t templatedata) Data() map[string]interface{} {
+    return t.data
+}
+
+
 func AuthHandler(res http.ResponseWriter, req *http.Request, ctx martini.Context) {
     session, _ := store.Get(req, "users")
 
     var u User
-    log.Print(config)
 
     oid, ok := session.Values["oid"].(string)
+
     if ok && bson.IsObjectIdHex(oid) {
-        query := bson.M{"_id": bson.ObjectIdHex(oid)}
         var result bson.M
-        err := database.C("users").Find(query).One(&result)
+        id := bson.ObjectIdHex(oid)
+        err := database.C("users").FindId(id).One(&result)
 
         if err != nil {
-            u = user{&result, true}
-        } else {
             u = DefaultUser()
+        } else {
+            u = user{&result, true}
         }
     } else {
         u = DefaultUser()
     }
 
+    t := templatedata {
+        u,
+        session.Flashes(),
+        make(map[string]interface{}),
+    }
+
+    session.Save(req, res)
+
     ctx.MapTo(u, (*User)(nil))
+    ctx.MapTo(t, (*TemplateData)(nil))
+}
+
+func UserAuth(username string, password string,
+    req *http.Request, res http.ResponseWriter) bool {
+    query := bson.M{"username": username}
+
+    var result bson.M
+    err := database.C("users").Find(query).One(&result)
+    if err != nil {
+        return false
+    }
+
+    bytes := []byte(password)
+    hashed := []byte(result["password"].(string))
+    err = bcrypt.CompareHashAndPassword(hashed, bytes)
+    
+    if err == nil {
+        session, _ := store.Get(req, "users")
+        session.Values["oid"] = result["_id"].(bson.ObjectId).Hex()
+        session.Save(req, res)
+        return true
+    }
+
+    return false
+}
+
+func UserLogout(req *http.Request, res http.ResponseWriter) {
+    session, _ := store.Get(req, "users")
+    session.Values["oid"] = nil
+    session.Save(req, res)
 }

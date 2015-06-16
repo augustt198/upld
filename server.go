@@ -4,7 +4,6 @@ import (
     "log"
     "os"
     "encoding/json"
-    "net/http"
 
     "gopkg.in/mgo.v2"
 
@@ -56,9 +55,7 @@ func main() {
         Layout: "layout",
     }))
 
-    m.Get("/", func(r render.Render, req *http.Request, u User) {
-       r.HTML(200, "home", u.LoggedIn())
-    })
+    RegisterHandlers(m)
 
     m.RunOnAddr(config.WebAddr)
 }

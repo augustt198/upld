@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Hello World</title>
+        <title>Upld</title>
 
         <link rel="stylesheet" href="css/primer.css">
         <link rel="stylesheet" href="css/style.css">
@@ -14,12 +14,46 @@
                     Upld
                 </a>
                 <span class="dot"></span>
-                Log in
+                {{ if .User.LoggedIn }}
+                    {{ .User.Username }}
+                    <span class="dot"></span>
+                    <form action="/logout" method="post" id="logout-form">
+                        <a href="javascript:;"
+                        onclick="document.getElementById('logout-form').submit()"
+                        class="menu-link">
+                            Log out
+                        </a>
+                    </form>
+                {{ else }}
+                    <a href="/login" class="menu-link">
+                        Log In
+                    </a>
+                    <span class="dot"></span>
+                    <a href="/register" class="menu-link">
+                        Register
+                    </a>
+                {{ end }}
             </div>
         </div>
 
         <div class="container">
+            {{ range .Flashes }}
+                <div class="flash">
+                    <span class="flash-close">X</span>
+                    {{ . }}
+                </div>
+            {{ end }}
+
             {{ yield }}
         </div>
+
+        <script>
+            var elems = document.querySelectorAll(".flash-close");
+            for (var i = 0; i < elems.length; i++) {
+                elems[i].onclick = function(e) {
+                    e.toElement.parentElement.remove()
+                }
+            }
+        </script>
     </body>
 </html>
