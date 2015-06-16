@@ -1,3 +1,7 @@
+body {
+    margin-bottom: 80px;
+}
+
 .header {
     background-color: rgb(127, 149, 189);
     height: 50px;

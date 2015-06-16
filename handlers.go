@@ -23,6 +23,8 @@ func RegisterHandlers(m *martini.ClassicMartini) {
 
     m.Get("/register", registerPage)
     m.Post("/register", registerSubmit)
+
+    m.Get("/me", mePage)
 }
 
 func homePage(r render.Render, u User, t TemplateData) {
@@ -103,5 +105,16 @@ func registerSubmit(r render.Render, u User, req *http.Request,
 
         AddFlash(req, w, "Successfully registered")
         r.Redirect("/")
+    }
+}
+
+func mePage(r render.Render, u User, req *http.Request,
+    w http.ResponseWriter, t TemplateData) {
+
+    if !u.LoggedIn() {
+        AddFlash(req, w, "You must be logged in to see that page")
+        r.Redirect("/login")
+    } else {
+        r.HTML(200, "me", t)
     }
 }
