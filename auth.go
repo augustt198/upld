@@ -1,6 +1,8 @@
 package main
 
 import (
+    "errors"
+    "strings"
     "net/http"
 
     "golang.org/x/crypto/bcrypt"
@@ -128,4 +130,51 @@ func UserLogout(req *http.Request, res http.ResponseWriter) {
     session, _ := store.Get(req, "users")
     session.Values["oid"] = nil
     session.Save(req, res)
+}
+
+func UserRegister(usr string, pwd string, pwdConfirm string) (*bson.ObjectId, error) {
+
+    list := make([]string, 0, 3)
+    if usr == "" {
+        list = append(list, "username")
+    }
+    if pwd == "" {
+        list = append(list, "password")
+    }
+    if pwdConfirm == "" {
+        list = append(list, "password confirmation")
+    }
+
+    if len(list) > 0 {
+        msg := "Missing fields: " + strings.Join(list, ", ")
+        return nil, errors.New(msg)
+    }
+
+    if pwd != pwdConfirm {
+        return nil, errors.New("Passwords do not match")
+    }
+
+    query := bson.M{"username": usr}
+    var result bson.M
+    err := database.C("users").Find(query).One(&result)
+    
+    // found document with username
+    if err == nil {
+        return nil, errors.New("Username taken")
+    }
+
+    hashed, _ := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
+    oid := bson.NewObjectId()
+    doc := bson.M{
+        "_id": oid,
+        "username": usr,
+        "password": string(hashed),
+    }
+
+    err = database.C("users").Insert(doc)
+    if err != nil {
+        return nil, errors.New("Database error")
+    }
+
+    return &oid, nil
 }

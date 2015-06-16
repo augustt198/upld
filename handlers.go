@@ -22,6 +22,7 @@ func RegisterHandlers(m *martini.ClassicMartini) {
     m.Post("/logout", logoutSubmit)
 
     m.Get("/register", registerPage)
+    m.Post("/register", registerSubmit)
 }
 
 func homePage(r render.Render, u User, t TemplateData) {
@@ -74,5 +75,33 @@ func registerPage(r render.Render, req *http.Request,
         r.Redirect("/")
     } else {
         r.HTML(200, "register", t)
+    }
+}
+
+func registerSubmit(r render.Render, u User, req *http.Request,
+    w http.ResponseWriter) {
+
+    if u.LoggedIn() {
+        AddFlash(req, w, "Already logged in")
+        r.Redirect("/")
+    } else {
+        usr := req.PostFormValue("username")
+        pwd := req.PostFormValue("password")
+        pwdConfirm := req.PostFormValue("password_confirmation")
+
+        oid, err := UserRegister(usr, pwd, pwdConfirm)
+
+        if err != nil {
+            AddFlash(req, w, err.Error())
+            r.Redirect("/register")
+            return
+        }
+
+        session, _ := store.Get(req, "users")
+        session.Values["oid"] = oid.Hex()
+        session.Save(req, w)
+
+        AddFlash(req, w, "Successfully registered")
+        r.Redirect("/")
     }
 }
