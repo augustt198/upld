@@ -25,6 +25,9 @@ func RegisterHandlers(m *martini.ClassicMartini) {
     m.Post("/register", RequireNoAuth, registerSubmit)
 
     m.Get("/me", RequireAuth, mePage)
+
+    m.Get("/upload", RequireAuth, uploadPage)
+    m.Post("/upload", RequireAuth, uploadSubmit)
 }
 
 func RequireAuth(u User, ren render.Render, r *http.Request,
@@ -117,5 +120,19 @@ func mePage(r render.Render, u User, req *http.Request,
 func uploadPage(r render.Render, u User, req *http.Request,
     w http.ResponseWriter, t TemplateData) {
 
-   r.HTML(200, "me", t)
+   r.HTML(200, "upload", t)
+}
+
+func uploadSubmit(r render.Render, u User, req *http.Request) string {
+    file, header, err := req.FormFile("upload")
+    if err != nil {
+        return err.Error()
+    }
+
+    err = Upload(file, header, u)
+    if err != nil {
+        return err.Error()
+    }
+
+    return "success"
 }

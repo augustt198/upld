@@ -17,6 +17,10 @@ body {
     color: white;
 }
 
+.menu-link.selected {
+    font-weight: bold;
+}
+
 .brand {
     text-decoration: none !important;
     color: white;
@@ -41,4 +45,17 @@ body {
 
 #logout-form {
     display: inline-block;
+}
+
+.progress-bar {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 2px;
+    width: 300px;
+    height: 7px;
+}
+
+.progress-bar-fill {
+    height: 5px;
+    background-color: rgb(127, 149, 189);
 }

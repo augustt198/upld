@@ -1,3 +1,16 @@
 <h2>Upload a file</h2>
 
-Todo...
+<form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+
+    <div class="input-field">
+        <input id="file-selector" type="file" name="upload" accept="*">
+    </div>
+
+    <div id="progress-bar-container"></div>
+
+    <div class="input-field">
+        <input id="upload-button" type="submit" class="btn btn-primary" value="Upload">
+    </div>
+</form>
+
+<script src="/js/upload.js"></script>

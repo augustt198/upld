@@ -48,7 +48,7 @@ func (u user) Username() string {
 
 func (u user) OID() *bson.ObjectId {
     if u.doc != nil {
-        oid := (*(u.doc))["oid"].(bson.ObjectId)
+        oid := (*(u.doc))["_id"].(bson.ObjectId)
         return &oid
     } else {
         return nil

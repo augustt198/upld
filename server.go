@@ -9,17 +9,24 @@ import (
 
     "github.com/go-martini/martini"
     "github.com/martini-contrib/render"
+
+    "github.com/mitchellh/goamz/aws"
+    "github.com/mitchellh/goamz/s3"
 )
 
 var config struct {
     WebAddr string `json:"web_addr"`
+    
     DBAddr string `json:"db_addr"`
     DBName string `json:"db_name"`
     DBUser string `json:"db_user"`
     DBPass string `json:"db_pass"`
+
+    BucketName string `json:"bucket_name"`
 }
 
 var database *mgo.Database
+var bucket *s3.Bucket
 
 func initMongo() {
     cfg, err := os.Open("config.json")
@@ -40,11 +47,24 @@ func initMongo() {
     if err != nil {
         log.Fatal(err)
     }
-    database = session.DB(config.DBName)    
+    database = session.DB(config.DBName)
+    log.Print("Database connected")
+}
+
+func initAws() {
+    auth, err := aws.EnvAuth()
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    client := s3.New(auth, aws.USEast)
+    bucket = client.Bucket(config.BucketName)
+    log.Print("S3 connected")
 }
 
 func main() {
-    initMongo();
+    initMongo()
+    initAws()
 
     m := martini.Classic()
 
