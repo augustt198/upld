@@ -25,6 +25,7 @@ func AddFlash(req *http.Request, w http.ResponseWriter, val interface{}) {
 type User interface {
     LoggedIn() bool
     Username() string
+    OID() *bson.ObjectId
 }
 
 type user struct {
@@ -42,6 +43,15 @@ func (u user) Username() string {
         return (*(u.doc))["username"].(string)
     } else {
         return ""
+    }
+}
+
+func (u user) OID() *bson.ObjectId {
+    if u.doc != nil {
+        oid := (*(u.doc))["oid"].(bson.ObjectId)
+        return &oid
+    } else {
+        return nil
     }
 }
 
@@ -132,7 +142,8 @@ func UserLogout(req *http.Request, res http.ResponseWriter) {
     session.Save(req, res)
 }
 
-func UserRegister(usr string, pwd string, pwdConfirm string) (*bson.ObjectId, error) {
+func UserRegister(usr string, pwd string,
+    pwdConfirm string) (*bson.ObjectId, error) {
 
     list := make([]string, 0, 3)
     if usr == "" {
