@@ -9,7 +9,7 @@ import (
 )
 
 const maxSize uint = 20 * 1000000
-const partSize int64 = 5 * 1000000
+const partSize int64 = 10 * 1000000
 
 func isDup(filename string, u User) (bool, error) {
     if !u.LoggedIn() {
