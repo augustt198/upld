@@ -29,17 +29,17 @@ func isDup(filename string, u User) (bool, error) {
 }
 
 func Upload(file multipart.File, header *multipart.FileHeader,
-    u User) error {
+    u User) (*bson.ObjectId, error) {
 
     if !u.LoggedIn() {
-        return errors.New("You must be logged in to do that")
+        return nil, errors.New("You must be logged in to do that")
     }
 
     dup, err := isDup(header.Filename, u)
     if err != nil {
-        return err
+        return nil, err
     } else if dup {
-        return errors.New("Duplicate filename")
+        return nil, errors.New("Duplicate filename")
     }
 
     docId := bson.NewObjectId()
@@ -62,19 +62,19 @@ func Upload(file multipart.File, header *multipart.FileHeader,
 
     parts, err := multi.PutAll(file, partSize)
     if err != nil {
-        return err
+        return nil, err
     }
     err = multi.Complete(parts)
     if err != nil {
-        return err
+        return nil, err
     }
 
     err = database.C("uploads").Insert(doc)
     if err != nil {
-        return err
+        return nil, err
     }
 
-    return nil
+    return &docId, nil
 }
 
 func RemoveUpload(u User, name string) bool {

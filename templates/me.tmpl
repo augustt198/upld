@@ -20,6 +20,9 @@
     <div class="four-fifths column">
         {{ range .Data.Uploads }}
             <div class="media-item" id="media-{{._id.Hex}}">
+                <div class="media-corner">
+                    <input type="checkbox">
+                </div>
                 <div class="media-image">
                     <a href="{{.S3_URL}}" target="_blank">
                         <img src="{{.S3_URL}}" width="100%" height="100%">
@@ -27,7 +30,7 @@
                 </div>
                 <div class="media-desc">
                     <span class="css-truncate css-truncate-target media-name">
-                        <a href="/view/">
+                        <a href="{{.ViewURL}}">
                             {{.name}}
                         </a>
                     </span>

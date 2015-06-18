@@ -37,6 +37,13 @@ func RegisterHandlers(m *martini.ClassicMartini) {
 
     m.Post("/delete/:id", deleteSubmit)
     m.Post("/favorite/:id", favoriteSubmit)
+
+    m.Get("/view/:user/:id", viewPage)
+}
+
+func NotFound(r http.ResponseWriter) {
+    r.WriteHeader(404)
+    r.Write([]byte("Not found."))
 }
 
 func RequireAuth(u User, ren render.Render, r *http.Request,
@@ -142,11 +149,13 @@ func mePage(r render.Render, u User, req *http.Request,
     iter := Paginate(page, 20, query).Iter()
     var entry bson.M
     for i := 0; iter.Next(&entry); i++ {
+        oid := entry["_id"].(bson.ObjectId)
         newMap := make(bson.M, len(entry))
         for k, v := range entry { newMap[k] = v }
 
         path := u.Username() + "/" + url.QueryEscape(entry["name"].(string))
         newMap["S3_URL"] = config.StorageBaseURL + path
+        newMap["ViewURL"] = "/view/" + u.Username() + "/" + oid.Hex()
         list = append(list, newMap)
     }
     t.Data()["Uploads"] = list
@@ -169,12 +178,12 @@ func uploadSubmit(r render.Render, u User, req *http.Request) string {
         return err.Error()
     }
 
-    err = Upload(file, header, u)
+    id, err := Upload(file, header, u)
     if err != nil {
         return err.Error()
     }
 
-    return "success"
+    return u.Username() + "/" + id.Hex()
 }
 
 func deleteSubmit(u User, params martini.Params) (int, string) {
@@ -234,4 +243,37 @@ func favoriteSubmit(u User, params martini.Params) (int, string) {
     }
 
     return 200, "success"
+}
+
+func viewPage(r render.Render, params martini.Params,
+    t TemplateData, res http.ResponseWriter) {
+
+    username := params["user"]
+    if !bson.IsObjectIdHex(params["id"]) {
+        NotFound(res)
+                return
+    }
+    uploadId := bson.ObjectIdHex(params["id"])
+
+    query := bson.M{"username": username}
+    var result bson.M
+    err := database.C("users").Find(query).One(&result)
+    if err != nil {
+        NotFound(res)
+                return
+    }
+
+    user_id := result["_id"]
+    query = bson.M{"_id": uploadId, "user_id": user_id}
+    err = database.C("uploads").Find(query).One(&result)
+    if err != nil {
+        NotFound(res)
+        return
+    }
+
+    path := username + "/" + url.QueryEscape(result["name"].(string))
+    t.Data()["Name"] = result["name"]
+    t.Data()["S3_URL"] = config.StorageBaseURL + path
+
+    r.HTML(200, "view", t)
 }

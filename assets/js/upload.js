@@ -49,8 +49,7 @@ form.onsubmit = function(e) {
 
     xhr.onload = function() {
         if (xhr.status == 200) {
-            uploadButton.setAttribute("value", "Finished");
-            
+            window.location = "/view/" + xhr.responseText;
         } else {
             uploadButton.setAttribute("class", "btn btn-danger");
             uploadButton.setAttribute("value", "Error")
