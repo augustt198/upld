@@ -9,8 +9,8 @@ import (
 const rangeSep string =
     `<a class="btn btn-outline disabled">...</a>`
 
-func Paginate(page uint, perPage uint, q *mgo.Query) *mgo.Query {
-    return q.Limit(int(perPage)).Skip(int((page - 1) * perPage))
+func Paginate(page int, perPage int, q *mgo.Query) *mgo.Query {
+    return q.Limit(perPage).Skip((page - 1) * perPage)
 }
 
 func PaginateBar(page int, count int) string {
@@ -26,7 +26,7 @@ func PaginateBar(page int, count int) string {
 
 
     if count < 10 {
-        html += btnRange(1, 9, page)
+        html += btnRange(1, count, page)
     } else {
         if page < 7 {
             html += btnRange(1, 8, page)

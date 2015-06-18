@@ -7,6 +7,9 @@
 
             <a href="/me" class="menu-item">
                 Uploads
+                <span class="counter">
+                    {{.Data.TotalUploads}}
+                </span>
             </a>
             <a href="me/favs" class="menu-item">
                 Favorites
@@ -15,6 +18,38 @@
     </div>
 
     <div class="four-fifths column">
-        Todo...
+        {{ range .Data.Uploads }}
+            <div class="media-item">
+                <div class="media-image">
+                    <a href="{{.S3_URL}}" target="_blank">
+                        <img src="{{.S3_URL}}" width="100%" height="100%">
+                    </a>
+                </div>
+                <div class="media-desc">
+                    <span class="css-truncate css-truncate-target media-name">
+                        <a href="/view/">
+                            {{.name}}
+                        </a>
+                    </span>
+
+                    <a href="javascript:activateUploadMenu('{{._id.Hex}}');"
+                    class="btn btn-sm btn-outline more-info-btn right">
+                        •••
+                    </a>
+                    <nav class="menu dropdown-menu" id="upload-menu-{{._id.Hex}}">
+                        <a class="menu-item" href="{{.S3_URL}}" target="_blank">
+                            Open in new window
+                        </a>
+                        <a class="menu-item" href="#">Favorite</a>
+                        <a class="menu-item" href="#">Download</a>
+                        <a class="menu-item" href="#">Delete</a>
+                    </nav>
+                </div>
+            </div>
+        {{ end }}
+        <br>
+        {{ .Data.Paginate }}
     </div>
 </div>
+
+<script src="/js/me.js"></script>

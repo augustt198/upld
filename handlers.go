@@ -1,10 +1,16 @@
 package main
 
 import (
+    "math"
+    "strconv"
+    "net/url"
     "net/http"
+    "html/template"
 
     "github.com/go-martini/martini"
     "github.com/martini-contrib/render"
+
+    "gopkg.in/mgo.v2/bson"
 )
 
 type TemplateData interface {
@@ -113,6 +119,37 @@ func registerSubmit(r render.Render, u User, req *http.Request,
 
 func mePage(r render.Render, u User, req *http.Request,
     w http.ResponseWriter, t TemplateData) {
+
+    var page int
+    page, err := strconv.Atoi(req.URL.Query().Get("page"))
+    if err != nil {
+        page = 1
+    }
+
+    doc := bson.M{"user_id": u.OID()}
+    query := database.C("uploads").Find(doc).Sort("-created_on")
+    total, err := query.Count()
+    var pages int
+    if err != nil {
+        pages = 1
+    } else {
+        pages = int(math.Ceil(float64(total) / 20))
+    }
+    list := make([]bson.M, 0, 20)
+    iter := Paginate(page, 20, query).Iter()
+    var entry bson.M
+    for i := 0; iter.Next(&entry); i++ {
+        newMap := make(bson.M, len(entry))
+        for k, v := range entry { newMap[k] = v }
+
+        path := u.Username() + "/" + url.QueryEscape(entry["name"].(string))
+        newMap["S3_URL"] = config.StorageBaseURL + path
+        list = append(list, newMap)
+    }
+    t.Data()["Uploads"] = list
+    t.Data()["TotalUploads"] = total
+
+    t.Data()["Paginate"] = template.HTML(PaginateBar(page, pages))
 
     r.HTML(200, "me", t)
 }

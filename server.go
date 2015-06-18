@@ -23,6 +23,8 @@ var config struct {
     DBPass string `json:"db_pass"`
 
     BucketName string `json:"bucket_name"`
+
+    StorageBaseURL string
 }
 
 var database *mgo.Database
@@ -59,6 +61,10 @@ func initAws() {
 
     client := s3.New(auth, aws.USEast)
     bucket = client.Bucket(config.BucketName)
+
+    config.StorageBaseURL = "https://s3.amazonaws.com/" +
+        config.BucketName + "/"
+
     log.Print("S3 connected")
 }
 

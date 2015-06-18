@@ -50,8 +50,10 @@ form.onsubmit = function(e) {
     xhr.onload = function() {
         if (xhr.status == 200) {
             uploadButton.setAttribute("value", "Finished");
-            console.log("Uploaded")
+            
         } else {
+            uploadButton.setAttribute("class", "btn btn-danger");
+            uploadButton.setAttribute("value", "Error")
             console.log("Error: " + xhr.status);
         }
     }
