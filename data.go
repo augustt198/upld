@@ -48,6 +48,7 @@ func Upload(file multipart.File, header *multipart.FileHeader,
         "user_id": u.OID(),
         "name": header.Filename,
         "created_on": time.Now(),
+        "favorite": false,
     }
 
     path := u.Username() + "/" + header.Filename
@@ -74,4 +75,10 @@ func Upload(file multipart.File, header *multipart.FileHeader,
     }
 
     return nil
+}
+
+func RemoveUpload(u User, name string) bool {
+    path := u.Username() + "/" + name
+
+    return bucket.Del(path) == nil
 }

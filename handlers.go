@@ -34,6 +34,9 @@ func RegisterHandlers(m *martini.ClassicMartini) {
 
     m.Get("/upload", RequireAuth, uploadPage)
     m.Post("/upload", RequireAuth, uploadSubmit)
+
+    m.Post("/delete/:id", deleteSubmit)
+    m.Post("/favorite/:id", favoriteSubmit)
 }
 
 func RequireAuth(u User, ren render.Render, r *http.Request,
@@ -172,4 +175,63 @@ func uploadSubmit(r render.Render, u User, req *http.Request) string {
     }
 
     return "success"
+}
+
+func deleteSubmit(u User, params martini.Params) (int, string) {
+    if !u.LoggedIn() {
+        return 403, "Not authorized"
+    }
+    if !bson.IsObjectIdHex(params["id"]) {
+        return 400, "Invalid ID"
+    }
+
+    query := bson.M{
+        "user_id": u.OID(),
+        "_id": bson.ObjectIdHex(params["id"]),
+    }
+    var result bson.M
+    err := database.C("uploads").Find(query).One(&result)
+    if err != nil {
+        return 404, "Upload not found"
+    }
+    name := result["name"].(string)
+    if !RemoveUpload(u, name) {
+        return 500, "Storage error"
+    }
+    err = database.C("uploads").Remove(query)
+    if err != nil {
+        return 500, "Database error"
+    }
+
+    return 200, "success"
+}
+
+func favoriteSubmit(u User, params martini.Params) (int, string) {
+    if !u.LoggedIn() {
+        return 403, "Not authorized"
+    }
+    if !bson.IsObjectIdHex(params["id"]) {
+        return 400, "Invalid ID"
+    }
+
+    query := bson.M{
+        "user_id": u.OID(),
+        "_id": bson.ObjectIdHex(params["id"]),
+    }
+    var result bson.M
+    err := database.C("uploads").Find(query).One(&result)
+    if err != nil {
+        return 404, "Not found"
+    }
+
+    fav := result["favorite"].(bool)
+    update := bson.M{
+        "$set": bson.M{"favorite": !fav},
+    }
+    err = database.C("uploads").Update(query, update)
+    if err != nil {
+        return 500, "Database error"
+    }
+
+    return 200, "success"
 }
