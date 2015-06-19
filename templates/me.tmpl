@@ -25,9 +25,15 @@
             </a>
             <div style="display: none" id="action-container">
                 <div class="btn-group">
-                    <a class="btn btn-sm">Delete</a>
-                    <a class="btn btn-sm">Favorite</a>
-                    <a class="btn btn-sm">Unfavorite</a>
+                    <a class="btn btn-sm" href="javascript:multiDelete()" id="delete-action">
+                        Delete
+                    </a>
+                    <a class="btn btn-sm" href="javascript:multiFavorite()" id="delete-action">
+                        Favorite
+                    </a>
+                    <a class="btn btn-sm" href="javascript:multiUnfavorite" id="delete-action">
+                        Unfavorite
+                    </a>
                 </div>            
             </div>
         </div>
@@ -35,7 +41,7 @@
         {{ range .Data.Uploads }}
             <div class="media-item" id="media-{{._id.Hex}}">
                 <div class="media-corner">
-                    <input type="checkbox">
+                    <input type="checkbox" data-id="{{._id.Hex}}">
                 </div>
                 <div class="media-image" style="position: relative">
                     <a href="{{.S3_URL}}" target="_blank">

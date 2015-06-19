@@ -21,17 +21,17 @@ function activateUploadMenu(id) {
     });
 }
 
-function sendPost(url, okCallback, errCallback) {
+function sendPost(url, data, okCallback, errCallback) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
     xhr.onload = function() {
         if (xhr.status == 200) {
-            okCallback();
+            okCallback(xhr.responseText);
         } else {
             errCallback();
         }
     }
-    xhr.send();
+    xhr.send(data);
 }
 
 function favoriteUpload(id) {
@@ -50,7 +50,7 @@ function favoriteUpload(id) {
 function deleteUpload(id) {
     var elem = document.getElementById("menu-delete-item");
     elem.innerHTML = "Deleting...";
-    sendPost("/delete/" + id, function() {
+    sendPost("/delete", id, function(res) {
         document.getElementById("media-" + id).remove();
     }, function() {
         alert("Error occured while deleting " + id);
@@ -123,4 +123,41 @@ function selectAllCheckbox() {
     }
 
     actionsVisible(state);
+}
+
+function getSelectedIds() {
+    var checkboxes = getCheckboxes();
+    var selected = [];
+    for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+            selected.push(checkboxes[i].dataset.id);
+        }
+    }
+    return selected;
+}
+
+function multiDelete() {
+    var ids = getSelectedIds();
+
+    var msg = "Are you sure you want to delete " + ids.length + " item";
+    msg += ids.length == 1 ? "?" : "s?";
+
+    if (!confirm(msg)) {
+        return;
+    }
+
+    var deleteBtn = document.getElementById("delete-action");
+    deleteBtn.innerHTML = "Deleting...";
+
+    var data = ids.join(",");
+    sendPost("/delete", data, function(res) {
+        var removed = res.split(",");
+        for (var i = 0; i < removed.length; i++) {
+            document.getElementById("media-" + removed[i]).remove();
+        }
+        deleteBtn.innerHTML = "Delete";
+    }, function() {
+        deleteBtn.innerHTML = "Delete";
+        alert("Failure during batch delete of Ids: " + data);
+    })
 }

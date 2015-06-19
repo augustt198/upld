@@ -1,6 +1,8 @@
 package main
 
 import (
+    "io/ioutil"
+    "strings"
     "math"
     "strconv"
     "net/url"
@@ -36,7 +38,7 @@ func RegisterHandlers(m *martini.ClassicMartini) {
     m.Get("/upload", RequireAuth, uploadPage)
     m.Post("/upload", RequireAuth, uploadSubmit)
 
-    m.Post("/delete/:id", deleteSubmit)
+    m.Post("/delete", deleteSubmit)
     m.Post("/favorite/:id", favoriteSubmit)
 
     m.Get("/view/:user/:id", viewPage)
@@ -187,33 +189,50 @@ func uploadSubmit(r render.Render, u User, req *http.Request) string {
     return u.Username() + "/" + id.Hex()
 }
 
-func deleteSubmit(u User, params martini.Params) (int, string) {
+func deleteSubmit(u User, r *http.Request) (int, string) {
     if !u.LoggedIn() {
         return 403, "Not authorized"
     }
-    if !bson.IsObjectIdHex(params["id"]) {
-        return 400, "Invalid ID"
+
+    bytes, err := ioutil.ReadAll(r.Body)
+    if err != nil {
+        return 400, "Invalid request"
     }
 
-    query := bson.M{
-        "user_id": u.OID(),
-        "_id": bson.ObjectIdHex(params["id"]),
-    }
-    var result bson.M
-    err := database.C("uploads").Find(query).One(&result)
-    if err != nil {
-        return 404, "Upload not found"
-    }
-    name := result["name"].(string)
-    if !RemoveUpload(u, name) {
-        return 500, "Storage error"
-    }
-    err = database.C("uploads").Remove(query)
-    if err != nil {
-        return 500, "Database error"
+    ids := strings.Split(string(bytes), ",")
+
+    for _, id := range ids {
+        if !bson.IsObjectIdHex(id) {
+            return 400, "Invalid ID"
+        }
     }
 
-    return 200, "success"
+    removed := make([]string, 0, len(ids))
+
+    // all IDs are valid
+    for _, id := range ids {
+        query := bson.M{
+            "user_id": u.OID(),
+            "_id": bson.ObjectIdHex(id),
+        }    
+
+        var result bson.M
+        err := database.C("uploads").Find(query).One(&result)
+        if err != nil {
+            continue
+        }
+        name := result["name"].(string)
+        if !RemoveUpload(u, name) {
+            continue
+        }
+        err = database.C("uploads").Remove(query)
+        if err != nil {
+            continue
+        }
+        removed = append(removed, id)
+    }
+
+    return 200, strings.Join(removed, ",")
 }
 
 func favoriteSubmit(u User, params martini.Params) (int, string) {
