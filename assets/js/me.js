@@ -57,3 +57,70 @@ function deleteUpload(id) {
         elem.innerHTML = "Delete"
     });
 }
+
+var masterCheckbox = document.getElementById("select-all-checkbox");
+function getCheckboxes() {
+    return document.querySelectorAll(".media-item .media-corner input");
+}
+
+function areAllSelected() {
+    var checkboxes = getCheckboxes();
+    for (var i = 0; i < checkboxes.length; i++) {
+        if (!checkboxes[i].checked) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function countChecked() {
+    var checkboxes = getCheckboxes();
+    var count = 0;
+    for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked)
+            count++;
+    }
+    return count;
+}
+
+function actionsVisible(visible) {
+    var elem = document.getElementById("action-container");
+    if (visible) {
+        elem.setAttribute("style", "display: inline-block");
+    } else {
+        elem.setAttribute("style", "display: none");
+    }
+}
+
+var allCheckboxes = getCheckboxes();
+for (var i = 0; i < allCheckboxes.length; i++) {
+    allCheckboxes[i].onchange = function() {
+        var all = areAllSelected();
+        masterCheckbox.checked = all;
+        var count = countChecked();
+        if (all || count > 0) {
+            actionsVisible(true)
+        } else {
+            actionsVisible(false);
+        }
+    }
+}
+
+
+function selectAllBtn() {
+    var newState = !masterCheckbox.checked;
+    masterCheckbox.checked = newState;
+
+    selectAllCheckbox();
+}
+
+function selectAllCheckbox() {
+    var state = masterCheckbox.checked;
+    var checkboxes = getCheckboxes();
+
+    for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = state;
+    }
+
+    actionsVisible(state);
+}

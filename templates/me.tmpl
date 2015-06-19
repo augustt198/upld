@@ -18,6 +18,20 @@
     </div>
 
     <div class="four-fifths column">
+        <div class="mass-actions">
+            <a href="javascript:selectAllBtn();" class="btn btn-sm" id="select-all-btn">
+                <input onchange="selectAllCheckbox()" type="checkbox" id="select-all-checkbox">
+                all
+            </a>
+            <div style="display: none" id="action-container">
+                <div class="btn-group">
+                    <a class="btn btn-sm">Delete</a>
+                    <a class="btn btn-sm">Favorite</a>
+                    <a class="btn btn-sm">Unfavorite</a>
+                </div>            
+            </div>
+        </div>
+        <br>
         {{ range .Data.Uploads }}
             <div class="media-item" id="media-{{._id.Hex}}">
                 <div class="media-corner">
