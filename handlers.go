@@ -16,6 +16,7 @@ import (
 type TemplateData interface {
     User() User
     Flashes() []interface{}
+    OpenGraph() map[string]interface{}
     Data() map[string]interface{}
 }
 
@@ -274,6 +275,9 @@ func viewPage(r render.Render, params martini.Params,
     path := username + "/" + url.QueryEscape(result["name"].(string))
     t.Data()["Name"] = result["name"]
     t.Data()["S3_URL"] = config.StorageBaseURL + path
+
+    t.OpenGraph()["title"] = result["name"]
+    t.OpenGraph()["image"] = config.StorageBaseURL + path
 
     r.HTML(200, "view", t)
 }

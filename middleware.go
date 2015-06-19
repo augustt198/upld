@@ -63,17 +63,19 @@ func DefaultUser() User {
 type templatedata struct {
     user User
     flashes []interface{}
+    opengraph map[string]interface{}
     data map[string]interface{}
 }
 
 func (t templatedata) User() User {
     return t.user
 }
-
 func (t templatedata) Flashes() []interface{} {
     return t.flashes
 }
-
+func (t templatedata) OpenGraph() map[string]interface{} {
+    return t.opengraph
+}
 func (t templatedata) Data() map[string]interface{} {
     return t.data
 }
@@ -103,6 +105,7 @@ func AuthHandler(res http.ResponseWriter, req *http.Request, ctx martini.Context
     t := templatedata {
         u,
         session.Flashes(),
+        make(map[string]interface{}),
         make(map[string]interface{}),
     }
 
