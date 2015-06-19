@@ -39,7 +39,7 @@ func RegisterHandlers(m *martini.ClassicMartini) {
     m.Post("/upload", RequireAuth, uploadSubmit)
 
     m.Post("/delete", deleteSubmit)
-    m.Post("/favorite/:id", favoriteSubmit)
+    m.Post("/favorite", favoriteSubmit)
 
     m.Get("/view/:user/:id", viewPage)
 }
@@ -195,12 +195,12 @@ func deleteSubmit(u User, r *http.Request) (int, string) {
     }
 
     bytes, err := ioutil.ReadAll(r.Body)
+
     if err != nil {
         return 400, "Invalid request"
     }
 
     ids := strings.Split(string(bytes), ",")
-
     for _, id := range ids {
         if !bson.IsObjectIdHex(id) {
             return 400, "Invalid ID"
@@ -235,34 +235,43 @@ func deleteSubmit(u User, r *http.Request) (int, string) {
     return 200, strings.Join(removed, ",")
 }
 
-func favoriteSubmit(u User, params martini.Params) (int, string) {
+func favoriteSubmit(u User, r *http.Request) (int, string) {
     if !u.LoggedIn() {
         return 403, "Not authorized"
     }
-    if !bson.IsObjectIdHex(params["id"]) {
-        return 400, "Invalid ID"
-    }
 
-    query := bson.M{
-        "user_id": u.OID(),
-        "_id": bson.ObjectIdHex(params["id"]),
-    }
-    var result bson.M
-    err := database.C("uploads").Find(query).One(&result)
+    action := r.URL.Query().Get("fav") == "1"
+    bytes, err := ioutil.ReadAll(r.Body)
     if err != nil {
-        return 404, "Not found"
+        return 400, "Invalid request"
     }
 
-    fav := result["favorite"].(bool)
-    update := bson.M{
-        "$set": bson.M{"favorite": !fav},
-    }
-    err = database.C("uploads").Update(query, update)
-    if err != nil {
-        return 500, "Database error"
+    ids := strings.Split(string(bytes), ",")
+
+    for _, id := range ids {
+        if !bson.IsObjectIdHex(id) {
+            return 400, "Invalid ID"
+        }
     }
 
-    return 200, "success"
+    removed := make([]string, 0, len(ids))
+
+    for _, id := range ids {
+        query := bson.M{
+            "user_id": u.OID(),
+            "_id": bson.ObjectIdHex(id),
+        }
+        
+        update := bson.M{
+            "$set": bson.M{"favorite": action},
+        }
+        err = database.C("uploads").Update(query, update)
+        if err == nil {
+            removed = append(removed, id)
+        }
+    }
+
+    return 200, strings.Join(removed, ",")
 }
 
 func viewPage(r render.Render, params martini.Params,
@@ -271,7 +280,7 @@ func viewPage(r render.Render, params martini.Params,
     username := params["user"]
     if !bson.IsObjectIdHex(params["id"]) {
         NotFound(res)
-                return
+        return
     }
     uploadId := bson.ObjectIdHex(params["id"])
 
@@ -280,7 +289,7 @@ func viewPage(r render.Render, params martini.Params,
     err := database.C("users").Find(query).One(&result)
     if err != nil {
         NotFound(res)
-                return
+        return
     }
 
     user_id := result["_id"]

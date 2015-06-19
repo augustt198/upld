@@ -158,6 +158,49 @@ function multiDelete() {
         deleteBtn.innerHTML = "Delete";
     }, function() {
         deleteBtn.innerHTML = "Delete";
-        alert("Failure during batch delete of Ids: " + data);
-    })
+        alert("Failure during batch delete of IDs: " + data);
+    });
+}
+
+// state:
+// true = favorite multiple
+// false = unfavorite multiple
+function multiFavorite(state) {
+    var ids = getSelectedIds();
+
+    var action = state ? "favorite " : "unfavorite ";
+    var msg = "Are you sure you want to " + action + ids.length + " item";
+    msg += ids.length == 1 ? "?" : "s?";
+
+    if (!confirm(msg)) {
+        return;
+    }
+
+    var btn = document.getElementById((state ? "" : "un") + "fav-action");
+    var originalText = btn.innerHTML;
+    if (state) {
+        btn.innerHTML = "Favoriting...";
+    } else {
+        btn.innerHTML = "Unfavoriting...";
+    }
+
+    var data = ids.join(",");
+    var url = "/favorite?fav=" + (state ? "1" : "0");
+    sendPost(url, data, function(res) {
+        var removed = res.split(",");
+        for (var i = 0; i < removed.length; i++) {
+            var selector = "#media-" + removed[i] + " #menu-favorite-item";
+            var elem = document.querySelector(selector);
+            if (state) {
+                elem.innerHTML = "Unfavorite";
+            } else {
+                elem.innerHTML = "Favorite";
+            }
+        }
+
+        btn.innerHTML = originalText;        
+    }, function() {
+        btn.innerHTML = originalText;
+        alert("Failure during batch (un)favorite of IDs: " + data);
+    });
 }
