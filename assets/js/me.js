@@ -35,7 +35,7 @@ function sendPost(url, data, okCallback, errCallback) {
 }
 
 function favoriteUpload(id) {
-    sendPost("/favorite/" + id, function() {
+    sendPost("/favorite", id, function() {
         var elem = document.querySelector("#media-" + id + " #menu-favorite-item");
         if (elem.innerHTML.trim() == "Favorite") {
             elem.innerHTML = "Unfavorite";
