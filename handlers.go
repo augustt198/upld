@@ -276,8 +276,8 @@ func viewPage(r render.Render, params martini.Params,
     t.Data()["Name"] = result["name"]
     t.Data()["S3_URL"] = config.StorageBaseURL + path
 
-    t.OpenGraph()["title"] = result["name"]
-    t.OpenGraph()["image"] = config.StorageBaseURL + path
+    t.OpenGraph()["og:title"] = result["name"]
+    t.OpenGraph()["og:image"] = config.StorageBaseURL + path
 
     r.HTML(200, "view", t)
 }
