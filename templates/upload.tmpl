@@ -1,16 +1,19 @@
-<h2>Upload a file</h2>
+<a class="menu-item upload-list-item selected" style="display: none" id="sample-upload-entry">
+    <span style="position: relative; z-index: 2"></span>
+    <span class="right percent-label" style="z-index: 2; position: relative"></span>
+    <div class="progress-bg"></div> 
+</a>
 
-<form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+<div style="display: none" id="hidden-inputs-wrapper">
+    <input type="file" multiple data-id="1" onchange="handleSelectedFiles(this)">
+</div>
 
-    <div class="input-field">
-        <input id="file-selector" type="file" name="upload" accept="*">
-    </div>
+<div class="menu" id="uploads-list">
+    <span class="menu-heading"><h2>Upload files</h2></span>
+</div>
 
-    <div id="progress-bar-container"></div>
-
-    <div class="input-field">
-        <input id="upload-button" type="submit" class="btn btn-primary" value="Upload">
-    </div>
-</form>
+<a href="javascript:addFiles()" class="btn">
+    Add Files
+</a>
 
 <script src="/js/upload.js"></script>

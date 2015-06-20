@@ -170,3 +170,48 @@ body {
 #action-container {
     margin-left: 10px;
 }
+
+.progress-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* width to be controlled with JS */
+    height: 100%;
+    background-color: rgba(73, 216, 107, 0.5);
+}
+
+.progress-complete-bg {
+    width: 100%;
+    background-color: rgba(117, 202, 228, 0.5)
+}
+
+.progress-failure-bg {
+    width: 100%;
+    background-color: rgba(228, 117, 117, 0.5);
+}
+
+@-webkit-keyframes slideshow {
+  0%    { left: 0; }
+  100%  { left: -200%; }
+}
+@moz-keyframes slideshow {
+  0%    { left: 0; }
+  100%  { left: -200%; }
+}
+
+.striped-progress-bg {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(83, 211, 31, 0.5),
+        rgba(83, 211, 31, 0.5) 10px,
+        rgba(37, 132, 17, 0.5) 10px,
+        rgba(37, 132, 17, 0.5) 20px
+    );
+    width: 1000% !important;
+    -webkit-animation: slideshow 30s linear infinite;
+    -moz-animation:    slideshow 30s linear infinite;
+}
+
+.upload-list-item {
+    overflow: hidden;
+}
