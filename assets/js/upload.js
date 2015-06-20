@@ -116,6 +116,9 @@ function onDrop(e) {
     e.stopPropagation();
     e.preventDefault();
 
+    isDragging = false;
+    titleElem.innerHTML = "Upload files";
+
     files = e.dataTransfer.files;
     for (var i = 0; i < files.length; i++) {
         uploadFile(files[i]);
