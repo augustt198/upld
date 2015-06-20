@@ -181,12 +181,12 @@ body {
 }
 
 .progress-complete-bg {
-    width: 100%;
+    width: 100% !important;
     background-color: rgba(117, 202, 228, 0.5)
 }
 
 .progress-failure-bg {
-    width: 100%;
+    width: 100% !important;
     background-color: rgba(228, 117, 117, 0.5);
 }
 
