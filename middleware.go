@@ -145,6 +145,15 @@ func UserLogout(req *http.Request, res http.ResponseWriter) {
     session.Save(req, res)
 }
 
+func validUsername(username string) bool {
+    for _, c := range username {
+        if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_') {
+            return false
+        }
+    }
+    return true
+}
+
 func UserRegister(usr string, pwd string,
     pwdConfirm string) (*bson.ObjectId, error) {
 
@@ -164,11 +173,15 @@ func UserRegister(usr string, pwd string,
         return nil, errors.New(msg)
     }
 
+    if !validUsername(usr) {
+        return nil, errors.New("Illegal username")
+    }
+
     if pwd != pwdConfirm {
         return nil, errors.New("Passwords do not match")
     }
 
-    query := bson.M{"username": usr}
+    query := bson.M{"username_lower": strings.ToLower(usr)}
     var result bson.M
     err := database.C("users").Find(query).One(&result)
     
@@ -182,6 +195,7 @@ func UserRegister(usr string, pwd string,
     doc := bson.M{
         "_id": oid,
         "username": usr,
+        "username_lower": strings.ToLower(usr),
         "password": string(hashed),
     }
 
