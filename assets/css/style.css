@@ -1,3 +1,7 @@
+html {
+    height: 100%;
+}
+
 body {
     margin-bottom: 30px;
 }
@@ -214,4 +218,10 @@ body {
 
 .upload-list-item {
     overflow: hidden;
+    text-shadow: none;
+}
+
+#upload-list-title {
+    text-align: center;
+    color: black !important;
 }
