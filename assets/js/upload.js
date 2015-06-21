@@ -3,6 +3,9 @@
 // 20MB
 var MAX_SIZE = 20 * 1000000;
 
+var queue = [];
+var downloadInProgress = false;
+
 function addFiles() {
     var children = document.getElementById("hidden-inputs-wrapper").children;
     var last = children[children.length - 1];
@@ -29,6 +32,9 @@ function handleSelectedFiles(elem) {
             uploadFile(files[i]);
         }
     }
+
+    if (!downloadInProgress)
+        downloadFromQueue();
 }
 
 function uploadFile(file) {
@@ -52,10 +58,25 @@ function uploadFile(file) {
         return;
     }
 
+    queue.push([file, textSpan, progressSpan, progressBar]);
+}
+
+function downloadFromQueue() {
+    if (queue.length > 0) {
+        downloadInProgress = true;
+        group = queue[0];
+
+        downloadItem(group[0], group[1], group[2], group[3])
+    } else {
+        downloadInProgress = false;
+    }
+}
+
+function downloadItem(file, textSpan, progressSpan, progressBar) {
     var data = new FormData();
     data.append("upload", file, file.name);
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/upload", true);
+    xhr.open("POST", "/upload");
     xhr.upload.addEventListener("progress", updateProgress, false);
 
     function updateProgress(event) {
@@ -91,6 +112,8 @@ function uploadFile(file) {
             progressBar.setAttribute("class", "progress-bg progress-failure-bg");
             progressSpan.innerHTML = "Failed";
         }
+        queue.splice(0, 1);
+        downloadFromQueue();
     }
 
     xhr.send(data);
@@ -138,4 +161,7 @@ function onDrop(e) {
             uploadFile(files[i]);
         }        
     }
+
+    if (!downloadInProgress)
+        downloadFromQueue();
 }
