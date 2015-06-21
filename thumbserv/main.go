@@ -165,6 +165,15 @@ func getUsername(id interface{}) (string, bool) {
 }
 
 func process(msg *sqs.Message) {
+    del := sqs.DeleteMessageInput{
+        QueueURL: &config.ThumbsQueueURL,
+        ReceiptHandle: msg.ReceiptHandle,
+    }
+    _, err = queue.DeleteMessage(&del)
+    if err != nil {
+        log.Print("COULD NOT DELETE MESSAGE: ", err)
+    }
+
     req, err := parseMessage(msg)
     if err != nil {
         log.Print(err)
@@ -226,15 +235,6 @@ func process(msg *sqs.Message) {
         return
     } else {
         log.Print("Saved thumbnail")
-    }
-
-    del := sqs.DeleteMessageInput{
-        QueueURL: &config.ThumbsQueueURL,
-        ReceiptHandle: msg.ReceiptHandle,
-    }
-    _, err = queue.DeleteMessage(&del)
-    if err != nil {
-        log.Print(err)
     }
 
     update := bson.M{
