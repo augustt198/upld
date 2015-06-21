@@ -169,7 +169,7 @@ func process(msg *sqs.Message) {
         QueueURL: &config.ThumbsQueueURL,
         ReceiptHandle: msg.ReceiptHandle,
     }
-    _, err = queue.DeleteMessage(&del)
+    _, err := queue.DeleteMessage(&del)
     if err != nil {
         log.Print("COULD NOT DELETE MESSAGE: ", err)
     }
