@@ -21,8 +21,13 @@ function handleSelectedFiles(elem) {
     elemParent.appendChild(node);
 
     var files = elem.files;
-    for (var i = 0; i < files.length; i++) {
-        uploadFile(files[i]);
+
+    if (files.length > 50) {
+        alert("Sorry, you can't upload more than 50 files at once");
+    } else {
+        for (var i = 0; i < files.length; i++) {
+            uploadFile(files[i]);
+        }
     }
 }
 
@@ -40,6 +45,12 @@ function uploadFile(file) {
     textSpan.appendChild(document.createTextNode(file.name));
 
     list.appendChild(node);
+
+    if (file.size > MAX_SIZE) {
+        progressBar.setAttribute("class", "progress-bg progress-failure-bg");
+        progressSpan.innerHTML = "Failed (file >20MB)";
+        return;
+    }
 
     var data = new FormData();
     data.append("upload", file, file.name);
@@ -120,7 +131,11 @@ function onDrop(e) {
     titleElem.innerHTML = "Upload files";
 
     files = e.dataTransfer.files;
-    for (var i = 0; i < files.length; i++) {
-        uploadFile(files[i]);
+    if (files.length > 50) {
+        alert("Sorry, you can't upload more than 50 files at once");
+    } else {
+        for (var i = 0; i < files.length; i++) {
+            uploadFile(files[i]);
+        }        
     }
 }
