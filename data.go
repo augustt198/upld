@@ -79,7 +79,7 @@ func Upload(file multipart.File, header *multipart.FileHeader,
         return nil, err
     }
 
-    go queueThumbnail(docId, 250, 160)
+    go queueThumbnail(docId, 250 * 2, 160 * 2)
 
     return &docId, nil
 }

@@ -156,8 +156,18 @@ func mePage(r render.Render, u User, req *http.Request,
         newMap := make(bson.M, len(entry))
         for k, v := range entry { newMap[k] = v }
 
-        path := u.Username() + "/" + url.QueryEscape(entry["name"].(string))
-        newMap["S3_URL"] = config.StorageBaseURL + path
+        name := url.QueryEscape(entry["name"].(string))
+        
+        path := u.Username() + "/" + name
+        var thumbnail string
+        if b, _ := entry["thumbnail"].(bool); b {
+            thumbnail = u.Username() + ".thumbs/" + name
+        } else {
+            thumbnail = path
+        }
+
+        newMap["ImageURL"] = config.StorageBaseURL + path
+        newMap["ThumbnailURL"] = config.StorageBaseURL + thumbnail
         newMap["ViewURL"] = "/view/" + u.Username() + "/" + oid.Hex()
         list = append(list, newMap)
     }
