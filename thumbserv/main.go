@@ -110,12 +110,12 @@ func loop() {
         output, err := queue.ReceiveMessage(&input)
         if err != nil {
             log.Print(err)
-            time.Sleep(3 * time.Second)
+        } else {
+            for _, msg := range output.Messages {
+                go process(msg)
+            }            
         }
-
-        for _, msg := range output.Messages {
-            go process(msg)
-        }
+        time.Sleep(3 * time.Second)
     }
 }
 
