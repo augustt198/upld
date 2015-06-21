@@ -10,8 +10,9 @@ import (
     "github.com/go-martini/martini"
     "github.com/martini-contrib/render"
 
-    "github.com/mitchellh/goamz/aws"
-    "github.com/mitchellh/goamz/s3"
+    "github.com/aws/aws-sdk-go/aws"
+    "github.com/aws/aws-sdk-go/service/s3"
+    "github.com/aws/aws-sdk-go/service/sqs"
 )
 
 var config struct {
@@ -23,12 +24,15 @@ var config struct {
     DBPass string `json:"db_pass"`
 
     BucketName string `json:"bucket_name"`
-
     StorageBaseURL string
+
+    ThumbsQueueName string `json:"thumbs_queue_name"`
+    ThumbsQueueRegion string `json:"thumbs_queue_region"`
 }
 
 var database *mgo.Database
-var bucket *s3.Bucket
+var storage *s3.S3
+var queue *sqs.SQS
 
 func initMongo() {
     cfg, err := os.Open("config.json")
@@ -53,14 +57,8 @@ func initMongo() {
     log.Print("Database connected")
 }
 
-func initAws() {
-    auth, err := aws.EnvAuth()
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    client := s3.New(auth, aws.USEast)
-    bucket = client.Bucket(config.BucketName)
+func initStorage() {
+    storage = s3.New(&aws.Config{Region: "us-east-1"})
 
     config.StorageBaseURL = "https://s3.amazonaws.com/" +
         config.BucketName + "/"
@@ -68,9 +66,18 @@ func initAws() {
     log.Print("S3 connected")
 }
 
+func initThumbsQueue() {
+    queue = sqs.New(&aws.Config{
+        Region: config.ThumbsQueueRegion,
+    })
+
+    log.Print("Thumbnail queue connected")
+}
+
 func main() {
     initMongo()
-    initAws()
+    initStorage()
+    initThumbsQueue()
 
     m := martini.Classic()
 

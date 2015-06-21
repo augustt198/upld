@@ -6,6 +6,8 @@ import (
     "mime/multipart"
 
     "gopkg.in/mgo.v2/bson"
+
+    "github.com/aws/aws-sdk-go/service/s3"
 )
 
 const maxSize uint = 20 * 1000000
@@ -54,17 +56,18 @@ func Upload(file multipart.File, header *multipart.FileHeader,
     path := u.Username() + "/" + header.Filename
     typeHeaders := header.Header["Content-Type"]
     contType := ""
-    if  typeHeaders != nil && len(typeHeaders) > 0 {
+    if typeHeaders != nil && len(typeHeaders) > 0 {
         contType = typeHeaders[0]
     }
 
-    multi, err := bucket.InitMulti(path, contType, "")
-
-    parts, err := multi.PutAll(file, partSize)
-    if err != nil {
-        return nil, err
+    input := s3.PutObjectInput{
+        Bucket: &config.BucketName,
+        Body: file,
+        Key: &path,
+        ContentType: &contType,
     }
-    err = multi.Complete(parts)
+
+    _, err = storage.PutObject(&input)
     if err != nil {
         return nil, err
     }
@@ -80,5 +83,11 @@ func Upload(file multipart.File, header *multipart.FileHeader,
 func RemoveUpload(u User, name string) bool {
     path := u.Username() + "/" + name
 
-    return bucket.Del(path) == nil
+    input := s3.DeleteObjectInput{
+        Bucket: &config.BucketName,
+        Key: &path,
+    }
+
+    _, err := storage.DeleteObject(&input)
+    return err == nil
 }
