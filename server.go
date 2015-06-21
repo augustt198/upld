@@ -28,6 +28,7 @@ var config struct {
 
     ThumbsQueueName string `json:"thumbs_queue_name"`
     ThumbsQueueRegion string `json:"thumbs_queue_region"`
+    ThumbsQueueURL string
 }
 
 var database *mgo.Database
@@ -70,6 +71,15 @@ func initThumbsQueue() {
     queue = sqs.New(&aws.Config{
         Region: config.ThumbsQueueRegion,
     })
+
+    input := sqs.GetQueueURLInput{
+        QueueName: &config.ThumbsQueueName,
+    }
+    output, err := queue.GetQueueURL(&input)
+    if err != nil {
+        log.Fatal(err)
+    }
+    config.ThumbsQueueURL = *output.QueueURL
 
     log.Print("Thumbnail queue connected")
 }

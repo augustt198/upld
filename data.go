@@ -1,6 +1,7 @@
 package main
 
 import (
+    "fmt"
     "time"
     "errors"
     "mime/multipart"
@@ -8,6 +9,7 @@ import (
     "gopkg.in/mgo.v2/bson"
 
     "github.com/aws/aws-sdk-go/service/s3"
+    "github.com/aws/aws-sdk-go/service/sqs"
 )
 
 const maxSize uint = 20 * 1000000
@@ -77,6 +79,8 @@ func Upload(file multipart.File, header *multipart.FileHeader,
         return nil, err
     }
 
+    go queueThumbnail(docId, 250, 160)
+
     return &docId, nil
 }
 
@@ -90,4 +94,18 @@ func RemoveUpload(u User, name string) bool {
 
     _, err := storage.DeleteObject(&input)
     return err == nil
+}
+
+func queueThumbnail(id bson.ObjectId, maxWidth int, maxHeight int) {
+    msg := fmt.Sprintf("%s,%d,%d", id.Hex(), maxWidth, maxHeight)
+
+    input := sqs.SendMessageInput{
+        MessageBody: &msg,
+        QueueURL: &config.ThumbsQueueURL,
+    }
+    _, err := queue.SendMessage(&input)
+
+    if err != nil {
+        fmt.Printf("Error adding upload to queue:", err)
+    }
 }
