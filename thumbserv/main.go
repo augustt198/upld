@@ -20,6 +20,9 @@ import (
     "image"
     "image/png"
     "github.com/nfnt/resize"
+
+    _ "image/jpeg"
+    _ "image/gif"
 )
 
 var config struct {
