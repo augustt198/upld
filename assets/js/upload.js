@@ -24,13 +24,8 @@ function handleSelectedFiles(elem) {
     elemParent.appendChild(node);
 
     var files = elem.files;
-
-    if (files.length > 50) {
-        alert("Sorry, you can't upload more than 50 files at once");
-    } else {
-        for (var i = 0; i < files.length; i++) {
-            uploadFile(files[i]);
-        }
+    for (var i = 0; i < files.length; i++) {
+        uploadFile(files[i]);
     }
 
     if (!uploadInProgress)
@@ -206,12 +201,8 @@ function onDrop(e) {
     titleElem.innerHTML = "Upload files";
 
     files = e.dataTransfer.files;
-    if (files.length > 50) {
-        alert("Sorry, you can't upload more than 50 files at once");
-    } else {
-        for (var i = 0; i < files.length; i++) {
-            uploadFile(files[i]);
-        }        
+    for (var i = 0; i < files.length; i++) {
+        uploadFile(files[i]);
     }
 
     if (!uploadInProgress)
