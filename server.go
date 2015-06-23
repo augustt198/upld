@@ -29,6 +29,8 @@ var config struct {
     ThumbsQueueName string `json:"thumbs_queue_name"`
     ThumbsQueueRegion string `json:"thumbs_queue_region"`
     ThumbsQueueURL string
+
+    AWSConfig *aws.Config
 }
 
 var database *mgo.Database
@@ -44,6 +46,7 @@ func initMongo() {
     if err = parser.Decode(&config); err != nil {
         log.Fatal("Could not decode json: ", err)
     }
+    config.AWSConfig = aws.DefaultConfig
 
     session, err := mgo.DialWithInfo(&mgo.DialInfo{
         Addrs: []string{config.DBAddr},

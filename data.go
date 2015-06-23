@@ -79,7 +79,7 @@ func Upload(file multipart.File, header *multipart.FileHeader,
         return nil, err
     }
 
-    go queueThumbnail(docId, 250 * 2, 160 * 2)
+    go QueueThumbnail(docId, 250 * 2, 160 * 2)
 
     return &docId, nil
 }
@@ -96,7 +96,7 @@ func RemoveUpload(u User, name string) bool {
     return err == nil
 }
 
-func queueThumbnail(id bson.ObjectId, maxWidth int, maxHeight int) {
+func QueueThumbnail(id bson.ObjectId, maxWidth int, maxHeight int) {
     msg := fmt.Sprintf("%s,%d,%d", id.Hex(), maxWidth, maxHeight)
 
     input := sqs.SendMessageInput{

@@ -4,7 +4,7 @@
 var MAX_SIZE = 20 * 1000000;
 
 var queue = [];
-var downloadInProgress = false;
+var uploadInProgress = false;
 
 function addFiles() {
     var children = document.getElementById("hidden-inputs-wrapper").children;
@@ -33,8 +33,8 @@ function handleSelectedFiles(elem) {
         }
     }
 
-    if (!downloadInProgress)
-        downloadFromQueue();
+    if (!uploadInProgress)
+        uploadFromQueue();
 }
 
 function uploadFile(file) {
@@ -61,22 +61,58 @@ function uploadFile(file) {
     queue.push([file, textSpan, progressSpan, progressBar]);
 }
 
-function downloadFromQueue() {
+function uploadFromQueue() {
     if (queue.length > 0) {
-        downloadInProgress = true;
+        uploadInProgress = true;
         group = queue[0];
 
-        downloadItem(group[0], group[1], group[2], group[3])
+
+        startUpload(group[0], group[1], group[2], group[3])
     } else {
-        downloadInProgress = false;
+        uploadInProgress = false;
     }
 }
 
-function downloadItem(file, textSpan, progressSpan, progressBar) {
-    var data = new FormData();
-    data.append("upload", file, file.name);
+function startUpload(file, textSpan, progressSpan, progressBar) {
+    var form = new FormData();
+    form.append("name", file.name);
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/upload");
+    xhr.open("POST", "/upload_start");
+
+    xhr.onload = function() {
+        if (xhr.status == 200) {
+            json = JSON.parse(xhr.responseText);
+            uploadItem(file, textSpan, progressSpan, progressBar, json);
+        } else {
+            progressBar.setAttribute("class", "progress-bg progress-failure-bg");
+            progressSpan.innerHTML = "Failed to authorize upload";
+            queue.splice(0, 1);
+            uploadFromQueue();
+        }
+    }
+
+    xhr.send(form);
+}
+
+function prepareForm(json, file) {
+    var form = new FormData();
+    
+    form.append("key", json["key"] + "/" + file.name);
+    form.append("X-Amz-Credential", json["x-amz-credential"]);
+    form.append("X-Amz-Algorithm", "AWS4-HMAC-SHA256");
+    form.append("X-Amz-Date", json["x-amz-date"]);
+    form.append("policy", json["policy"]);
+    form.append("X-Amz-Signature", json["signature"]);
+    form.append("file", file, file.name);
+
+    return form;
+}
+
+function uploadItem(file, textSpan, progressSpan, progressBar, json) {
+    var data = prepareForm(json, file);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "http://" + json["bucket"] + ".s3.amazonaws.com/");
     xhr.upload.addEventListener("progress", updateProgress, false);
 
     function updateProgress(event) {
@@ -97,26 +133,43 @@ function downloadItem(file, textSpan, progressSpan, progressBar) {
     }
 
     xhr.onload = function() {
-        if (xhr.status == 200) {
+        if (xhr.status == 204) {
             progressBar.setAttribute("class", "progress-bg progress-complete-bg");
 
             var linkNode = document.createElement("A");
-            linkNode.setAttribute("href", "/view/" + xhr.responseText);
+            linkNode.setAttribute("href", "/view/" + json["key"] + "/" + json["upload_id"]);
             linkNode.setAttribute("target", "_blank");
             linkNode.appendChild(document.createTextNode(file.name));
             clearChildren(textSpan);
             textSpan.appendChild(linkNode);
 
             progressSpan.innerHTML = "Complete";
+
+            finishUpload(json.upload_id)
         } else {
+            console.log(xhr.responseText);
             progressBar.setAttribute("class", "progress-bg progress-failure-bg");
             progressSpan.innerHTML = "Failed";
         }
         queue.splice(0, 1);
-        downloadFromQueue();
+        uploadFromQueue();
     }
 
     xhr.send(data);
+}
+
+function finishUpload(id) {
+    form = new FormData();
+    form.append("id", id);
+    xhr = new XMLHttpRequest();
+    xhr.open("POST", "/upload_confirm");
+    xhr.onload = function() {
+        if (xhr.status != 200) {
+            alert("Warning: unable to confirm upload");
+        }
+    }
+
+    xhr.send(form);
 }
 
 var htmlNode = document.body.parentNode;
@@ -135,7 +188,6 @@ function dragEnter(e) {
         titleElem.innerHTML = "Release to upload";
         isDragging = true;
     }
-
 }
 
 function dragLeave(e) {
@@ -162,6 +214,6 @@ function onDrop(e) {
         }        
     }
 
-    if (!downloadInProgress)
-        downloadFromQueue();
+    if (!uploadInProgress)
+        uploadFromQueue();
 }

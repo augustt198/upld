@@ -1,6 +1,7 @@
 package main
 
 import (
+    "time"
     "io/ioutil"
     "strings"
     "math"
@@ -36,7 +37,8 @@ func RegisterHandlers(m *martini.ClassicMartini) {
     m.Get("/me", RequireAuth, mePage)
 
     m.Get("/upload", RequireAuth, uploadPage)
-    m.Post("/upload", RequireAuth, uploadSubmit)
+    m.Post("/upload_start", RequireAuth, uploadStart)
+    m.Post("/upload_confirm", RequireAuth, uploadConfirm)
 
     m.Post("/delete", deleteSubmit)
     m.Post("/favorite", favoriteSubmit)
@@ -68,13 +70,19 @@ func RequireNoAuth(u User, ren render.Render, r *http.Request,
 }
 
 func homePage(r render.Render, u User, t TemplateData) {
+    if u.LoggedIn() {
+        upload, err := NewDirectUpload(
+            u.Username(), *config.AWSConfig.Credentials)
+        if err == nil {
+            t.Data()["Upload"] = upload
+        }
+    }
     r.HTML(200, "home", t)
 }
 
 
 func loginPage(r render.Render, req *http.Request,
     w http.ResponseWriter, u User, t TemplateData) {
-
 
     r.HTML(200, "login", t)
 }
@@ -197,6 +205,62 @@ func uploadSubmit(r render.Render, u User, req *http.Request) (int, string) {
     }
 
     return 200, u.Username() + "/" + id.Hex()
+}
+
+func uploadStart(r render.Render, u User, req *http.Request) {
+    name := req.FormValue("name")
+    if name == "" {
+        json := map[string]interface{}{"error": "No name provided"}
+        r.JSON(400, json)
+        return
+    }
+
+    upload, err := NewDirectUpload(u.Username(), *config.AWSConfig.Credentials)
+    if err != nil {
+        msg := "Internal error. Upload authorization not available at this time."
+        json := map[string]interface{}{"error": msg}
+        r.JSON(500, json)
+        return
+    }
+    
+    id := bson.NewObjectId()
+    doc := bson.M{
+        "_id": id,
+        "user_id": u.OID(),
+        "name": name,
+        "favorite": false,
+        "created_on": time.Now(),        
+    }
+
+    err = database.C("uploads").Insert(doc)
+    if err != nil {
+        json := map[string]interface{}{"error": "Database error"}
+        r.JSON(500, json)
+        return
+    }
+
+    json := map[string]interface{}{
+        "x-amz-date": upload.XAmzDate,
+        "x-amz-credential": upload.XAmzCredential,
+        "policy": upload.Policy,
+        "signature": upload.Signature,
+        "bucket": config.BucketName,
+        "key": u.Username(),
+        "upload_id": id.Hex(),
+    }
+    r.JSON(200, json)
+}
+
+func uploadConfirm(u User, req *http.Request) (int, string) {
+    id := req.FormValue("id")
+    if !bson.IsObjectIdHex(id) {
+        return 400, "Invalid ID"
+    }
+
+    // 250x160 dilated 1.5x
+    QueueThumbnail(bson.ObjectIdHex(id), 375, 240)
+
+    return 200, "success"
 }
 
 func deleteSubmit(u User, r *http.Request) (int, string) {
