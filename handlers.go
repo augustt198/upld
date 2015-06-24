@@ -193,20 +193,6 @@ func uploadPage(r render.Render, u User, req *http.Request,
    r.HTML(200, "upload", t)
 }
 
-func uploadSubmit(r render.Render, u User, req *http.Request) (int, string) {
-    file, header, err := req.FormFile("upload")
-    if err != nil {
-        return 400, "Missing file upload"
-    }
-
-    id, err := Upload(file, header, u)
-    if err != nil {
-        return 500, "Upload error"
-    }
-
-    return 200, u.Username() + "/" + id.Hex()
-}
-
 func uploadStart(r render.Render, u User, req *http.Request) {
     name := req.FormValue("name")
     if name == "" {

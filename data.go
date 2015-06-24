@@ -32,58 +32,6 @@ func isDup(filename string, u User) (bool, error) {
     return count > 1, nil
 }
 
-func Upload(file multipart.File, header *multipart.FileHeader,
-    u User) (*bson.ObjectId, error) {
-
-    if !u.LoggedIn() {
-        return nil, errors.New("You must be logged in to do that")
-    }
-
-    dup, err := isDup(header.Filename, u)
-    if err != nil {
-        return nil, err
-    } else if dup {
-        return nil, errors.New("Duplicate filename")
-    }
-
-    docId := bson.NewObjectId()
-    doc := bson.M{
-        "_id": docId,
-        "user_id": u.OID(),
-        "name": header.Filename,
-        "created_on": time.Now(),
-        "favorite": false,
-    }
-
-    path := u.Username() + "/" + header.Filename
-    typeHeaders := header.Header["Content-Type"]
-    contType := ""
-    if typeHeaders != nil && len(typeHeaders) > 0 {
-        contType = typeHeaders[0]
-    }
-
-    input := s3.PutObjectInput{
-        Bucket: &config.BucketName,
-        Body: file,
-        Key: &path,
-        ContentType: &contType,
-    }
-
-    _, err = storage.PutObject(&input)
-    if err != nil {
-        return nil, err
-    }
-
-    err = database.C("uploads").Insert(doc)
-    if err != nil {
-        return nil, err
-    }
-
-    go QueueThumbnail(docId, 250 * 2, 160 * 2)
-
-    return &docId, nil
-}
-
 func RemoveUpload(u User, name string) bool {
     path := u.Username() + "/" + name
 
