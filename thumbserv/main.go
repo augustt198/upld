@@ -227,8 +227,10 @@ func process(msg *sqs.Message) {
         Bucket: &config.BucketName,
         Key: &thumbKey,
         Body: r,
+        ContentType: aws.String("image/png"),
     }
     _, err = storage.PutObject(&put)
+    buf.Reset()
 
     if err != nil {
         log.Print(err)
