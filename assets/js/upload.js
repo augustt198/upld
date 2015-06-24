@@ -93,6 +93,7 @@ function prepareForm(json, file) {
     var form = new FormData();
     
     form.append("key", json["key"] + "/" + file.name);
+    form.append("Content-Type", file.type);
     form.append("X-Amz-Credential", json["x-amz-credential"]);
     form.append("X-Amz-Algorithm", "AWS4-HMAC-SHA256");
     form.append("X-Amz-Date", json["x-amz-date"]);

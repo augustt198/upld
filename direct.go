@@ -82,6 +82,9 @@ func CreatePolicy(t time.Time, username, xamzcred, xamzdate string) (string, err
                 "starts-with", "$key", username + "/",
             },
             []interface{}{
+                "starts-with", "$Content-Type", "",
+            },
+            []interface{}{
                 "content-length-range", 1, 20000000, // 20MB
             },
             map[string]interface{}{
