@@ -255,41 +255,23 @@ func deleteSubmit(u User, r *http.Request) (int, string) {
     }
 
     bytes, err := ioutil.ReadAll(r.Body)
-
     if err != nil {
         return 400, "Invalid request"
     }
 
     ids := strings.Split(string(bytes), ",")
+    oids := make([]bson.ObjectId, 0, len(ids))
     for _, id := range ids {
-        if !bson.IsObjectIdHex(id) {
+        if bson.IsObjectIdHex(id) {
+            oids = append(oids, bson.ObjectIdHex(id))
+        } else {
             return 400, "Invalid ID"
         }
     }
 
-    removed := make([]string, 0, len(ids))
-
-    // all IDs are valid
-    for _, id := range ids {
-        query := bson.M{
-            "user_id": u.OID(),
-            "_id": bson.ObjectIdHex(id),
-        }    
-
-        var result bson.M
-        err := database.C("uploads").Find(query).One(&result)
-        if err != nil {
-            continue
-        }
-        name := result["name"].(string)
-        if !RemoveUpload(u, name) {
-            continue
-        }
-        err = database.C("uploads").Remove(query)
-        if err != nil {
-            continue
-        }
-        removed = append(removed, id)
+    removed, err := RemoveMulti(u, oids)
+    if err != nil {
+        return 500, err.Error()
     }
 
     return 200, strings.Join(removed, ",")
