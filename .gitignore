@@ -1,6 +1,5 @@
 config.json
 upld
-thumbserv/thumbserv
 
 # AWS Lambda
 config.js
