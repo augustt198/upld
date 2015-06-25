@@ -176,15 +176,9 @@ func mePage(r render.Render, u User, req *http.Request,
         name := entry["name"].(string)
         
         path := u.Username() + "/" + name
-        var thumbnail string
-        if b, _ := entry["thumbnail"].(bool); b {
-            thumbnail = u.Username() + ".thumbs/" + name
-        } else {
-            thumbnail = path
-        }
 
         newMap["ImageURL"] = escapeURL(config.ImageBaseURL + path)
-        newMap["ThumbnailURL"] = escapeURL(config.ThumbnailBaseURL + thumbnail)
+        newMap["ThumbnailURL"] = escapeURL(config.ThumbnailBaseURL + path)
         newMap["ViewURL"] = "/view/" + u.Username() + "/" + oid.Hex()
         list = append(list, newMap)
     }

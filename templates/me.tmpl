@@ -38,6 +38,12 @@
             </div>
         </div>
         <br>
+        <script>
+            function imageFail(elem) {
+                elem.onerror = null;
+                elem.src = elem.dataset.fallback;
+            }
+        </script>
         {{ range .Data.Uploads }}
             <div class="media-item" id="media-{{._id.Hex}}">
                 <div class="media-corner">
@@ -45,7 +51,8 @@
                 </div>
                 <div class="media-image" style="position: relative">
                     <a href="{{.ImageURL}}" target="_blank">
-                        <img src="{{.ThumbnailURL}}" class="media-thumbnail">
+                        <img src="{{.ThumbnailURL}}" data-fallback="{{.ImageURL}}"
+                        onerror="imageFail(this)" class="media-thumbnail">
                     </a>
                 </div>
                 <div class="media-desc">
