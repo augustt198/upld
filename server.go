@@ -12,7 +12,6 @@ import (
 
     "github.com/aws/aws-sdk-go/aws"
     "github.com/aws/aws-sdk-go/service/s3"
-    "github.com/aws/aws-sdk-go/service/sqs"
 )
 
 var config struct {
@@ -27,16 +26,11 @@ var config struct {
     ImageBaseURL string `json:"image_base_url"`
     ThumbnailBaseURL string `json:"thumbnail_base_url"`
 
-    ThumbsQueueName string `json:"thumbs_queue_name"`
-    ThumbsQueueRegion string `json:"thumbs_queue_region"`
-    ThumbsQueueURL string
-
     AWSConfig *aws.Config
 }
 
 var database *mgo.Database
 var storage *s3.S3
-var queue *sqs.SQS
 
 func initMongo() {
     cfg, err := os.Open("config.json")
@@ -68,27 +62,9 @@ func initStorage() {
     log.Print("S3 connected")
 }
 
-func initThumbsQueue() {
-    queue = sqs.New(&aws.Config{
-        Region: config.ThumbsQueueRegion,
-    })
-
-    input := sqs.GetQueueURLInput{
-        QueueName: &config.ThumbsQueueName,
-    }
-    output, err := queue.GetQueueURL(&input)
-    if err != nil {
-        log.Fatal(err)
-    }
-    config.ThumbsQueueURL = *output.QueueURL
-
-    log.Print("Thumbnail queue connected")
-}
-
 func main() {
     initMongo()
     initStorage()
-    initThumbsQueue()
 
     m := martini.Classic()
 

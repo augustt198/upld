@@ -38,7 +38,6 @@ func RegisterHandlers(m *martini.ClassicMartini) {
 
     m.Get("/upload", RequireAuth, uploadPage)
     m.Post("/upload_start", RequireAuth, uploadStart)
-    m.Post("/upload_confirm", RequireAuth, uploadConfirm)
 
     m.Post("/delete", deleteSubmit)
     m.Post("/favorite", favoriteSubmit)
@@ -238,18 +237,6 @@ func uploadStart(r render.Render, u User, req *http.Request) {
         "upload_id": id.Hex(),
     }
     r.JSON(200, json)
-}
-
-func uploadConfirm(u User, req *http.Request) (int, string) {
-    id := req.FormValue("id")
-    if !bson.IsObjectIdHex(id) {
-        return 400, "Invalid ID"
-    }
-
-    // 250x160 dilated 1.5x
-    QueueThumbnail(bson.ObjectIdHex(id), 375, 240)
-
-    return 200, "success"
 }
 
 func deleteSubmit(u User, r *http.Request) (int, string) {

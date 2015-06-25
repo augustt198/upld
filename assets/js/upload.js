@@ -140,8 +140,6 @@ function uploadItem(file, textSpan, progressSpan, progressBar, json) {
             textSpan.appendChild(linkNode);
 
             progressSpan.innerHTML = "Complete";
-
-            finishUpload(json.upload_id)
         } else {
             console.log(xhr.responseText);
             progressBar.setAttribute("class", "progress-bg progress-failure-bg");
@@ -152,20 +150,6 @@ function uploadItem(file, textSpan, progressSpan, progressBar, json) {
     }
 
     xhr.send(data);
-}
-
-function finishUpload(id) {
-    form = new FormData();
-    form.append("id", id);
-    xhr = new XMLHttpRequest();
-    xhr.open("POST", "/upload_confirm");
-    xhr.onload = function() {
-        if (xhr.status != 200) {
-            alert("Warning: unable to confirm upload");
-        }
-    }
-
-    xhr.send(form);
 }
 
 var htmlNode = document.body.parentNode;
