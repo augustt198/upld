@@ -3,11 +3,12 @@
 Upld is an image sharing service written in Go, using
 [S3](http://aws.amazon.com/s3/) for storage.
 
-The `thumbserv/` directory contains a thumbnail generator, which
-receives messages from [SQS](http://aws.amazon.com/sqs/).
+The `thumbgen/` directory contains a thumbnail generator, which
+can be triggered by [AWS Lambda](http://aws.amazon.com/lambda/)
+in response to uploads.
 
 ### Installation
 
 1. Clone the repository
 2. Install dependencies (`go get ...`)
-3. `go build` in the root and `thumbserv/` directories
+3. Compile (`go build`)
