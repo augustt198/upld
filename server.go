@@ -24,7 +24,8 @@ var config struct {
     DBPass string `json:"db_pass"`
 
     BucketName string `json:"bucket_name"`
-    StorageBaseURL string
+    ImageBaseURL string `json:"image_base_url"`
+    ThumbnailBaseURL string `json:"thumbnail_base_url"`
 
     ThumbsQueueName string `json:"thumbs_queue_name"`
     ThumbsQueueRegion string `json:"thumbs_queue_region"`
@@ -63,9 +64,6 @@ func initMongo() {
 
 func initStorage() {
     storage = s3.New(&aws.Config{Region: "us-east-1"})
-
-    config.StorageBaseURL = "https://s3.amazonaws.com/" +
-        config.BucketName + "/"
 
     log.Print("S3 connected")
 }

@@ -138,6 +138,15 @@ func registerSubmit(r render.Render, u User, req *http.Request,
     r.Redirect("/")
 }
 
+func escapeURL(src string) string {
+    u, err := url.Parse(src)
+    if err != nil {
+        return src
+    } else {
+        return u.String()
+    }
+}
+
 func mePage(r render.Render, u User, req *http.Request,
     w http.ResponseWriter, t TemplateData) {
 
@@ -164,7 +173,7 @@ func mePage(r render.Render, u User, req *http.Request,
         newMap := make(bson.M, len(entry))
         for k, v := range entry { newMap[k] = v }
 
-        name := url.QueryEscape(entry["name"].(string))
+        name := entry["name"].(string)
         
         path := u.Username() + "/" + name
         var thumbnail string
@@ -174,8 +183,8 @@ func mePage(r render.Render, u User, req *http.Request,
             thumbnail = path
         }
 
-        newMap["ImageURL"] = config.StorageBaseURL + path
-        newMap["ThumbnailURL"] = config.StorageBaseURL + thumbnail
+        newMap["ImageURL"] = escapeURL(config.ImageBaseURL + path)
+        newMap["ThumbnailURL"] = escapeURL(config.ThumbnailBaseURL + thumbnail)
         newMap["ViewURL"] = "/view/" + u.Username() + "/" + oid.Hex()
         list = append(list, newMap)
     }
@@ -342,12 +351,12 @@ func viewPage(r render.Render, params martini.Params,
         return
     }
 
-    path := username + "/" + url.QueryEscape(result["name"].(string))
+    path := username + "/" + result["name"].(string)
     t.Data()["Name"] = result["name"]
-    t.Data()["S3_URL"] = config.StorageBaseURL + path
+    t.Data()["S3_URL"] = escapeURL(config.ImageBaseURL + path)
 
     t.OpenGraph()["og:title"] = result["name"]
-    t.OpenGraph()["og:image"] = config.StorageBaseURL + path
+    t.OpenGraph()["og:image"] = t.Data()["S3_URL"]
 
     r.HTML(200, "view", t)
 }
