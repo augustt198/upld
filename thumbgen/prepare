@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# This script prepares a zip file which
+# can be uploaded to AWS Lambda
+
+npm install async gm
+zip thumbgen.zip -r node_modules thumbgen.js config.js
