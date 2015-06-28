@@ -6,6 +6,22 @@ body {
     margin-bottom: 30px;
 }
 
+.container {
+    width: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+@media (max-width: 34em) {
+    .header {
+        text-align: center;
+    }
+    .column {
+        float: none;
+        width: 100%;
+    }
+}
+
 .header {
     background-color: rgb(127, 149, 189);
     box-shadow: 0 4px 2px -2px rgb(234, 234, 234);
