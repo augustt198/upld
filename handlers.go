@@ -217,7 +217,7 @@ func uploadStart(r render.Render, u User, req *http.Request) {
         "user_id": u.OID(),
         "name": name,
         "favorite": false,
-        "created_on": time.Now(),        
+        "created_on": time.Now(),
     }
 
     err = database.C("uploads").Insert(doc)

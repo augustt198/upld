@@ -68,7 +68,6 @@ func main() {
 
     m := martini.Classic()
 
-    m.Use(martini.Static("assets"))
     m.Use(AuthHandler)
 
     m.Use(render.Renderer(render.Options{
