@@ -16,6 +16,8 @@ import (
 
 var config struct {
     WebAddr string `json:"web_addr"`
+
+    StaticDir string `json:"static_dir"`
     
     DBAddr string `json:"db_addr"`
     DBName string `json:"db_name"`
@@ -68,6 +70,12 @@ func main() {
 
     m := martini.Classic()
 
+    if config.StaticDir != "" {
+        opts := martini.StaticOptions{
+            Prefix: "assets",
+        }
+        m.Use(martini.Static(config.StaticDir, opts))
+    }
     m.Use(AuthHandler)
 
     m.Use(render.Renderer(render.Options{
