@@ -244,3 +244,12 @@ body {
     text-align: center;
     color: black !important;
 }
+
+#home-graphic {
+    margin-top: 40px !important;
+    margin: 0 auto;
+}
+
+#home-graphic img {
+    max-width: 80%;
+}
