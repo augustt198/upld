@@ -78,7 +78,7 @@ func homePage(r render.Render, u User, t TemplateData) {
     }
     t.OpenGraph()["og:title"] = "Upld"
     t.OpenGraph()["og:description"] = "Fast image sharing"
-    t.OpenGraph()["og:image"] = "http://upld.im/assets/images/graphic.svg"
+    t.OpenGraph()["og:image"] = "http://upld.im/assets/images/graphic.png"
     r.HTML(200, "home", t)
 }
 
