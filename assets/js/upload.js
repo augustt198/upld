@@ -108,7 +108,7 @@ function uploadItem(file, textSpan, progressSpan, progressBar, json) {
     var data = prepareForm(json, file);
 
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://" + json["bucket"] + ".s3.amazonaws.com/");
+    xhr.open("POST", "https://s3.amazonaws.com/" + json["bucket"]);
     xhr.upload.addEventListener("progress", updateProgress, false);
 
     function updateProgress(event) {
